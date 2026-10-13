@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coding Academy</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #dbeafe; color: #1e293b; }
+
+    nav { display: flex; justify-content: space-between; align-items: center; padding: 16px 40px; background: #bfdbfe; position: sticky; top: 0; z-index: 10; }
+    .logo { font-size: 20px; font-weight: bold; color: #1d4ed8; }
+    nav ul { list-style: none; display: flex; gap: 24px; }
+    nav a { color: #1e293b; text-decoration: none; padding-bottom: 4px; cursor: pointer; }
+    nav a:hover, nav a.active { color: #1d4ed8; border-bottom: 2px solid #1d4ed8; }
+
+    .hero { text-align: center; padding: 50px 20px 30px; }
+    .hero h1 { font-size: 32px; margin-bottom: 8px; color: #1e3a8a; }
+    .hero p { color: #475569; }
+
+    .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; padding: 20px 40px 50px; max-width: 1100px; margin: 0 auto; }
+    .card { background: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(30, 64, 175, 0.15); transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; display: flex; flex-direction: column; }
+    .card:hover { transform: translateY(-5px); box-shadow: 0 6px 16px rgba(30, 64, 175, 0.25); }
+    .card-body { padding: 16px; flex: 1; }
+    .card-body h3 { margin-bottom: 8px; color: #1d4ed8; }
+    .card-body p { font-size: 14px; line-height: 1.5; color: #475569; }
+    .hint { display: block; margin-top: 10px; font-size: 13px; color: #2563eb; font-weight: bold; }
+
+    /* Tampilan jendela editor kode */
+    .editor { background: #0f172a; }
+    .editor-bar { background: #1e293b; padding: 8px 12px; display: flex; align-items: center; gap: 6px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot.r { background: #ef4444; } .dot.y { background: #eab308; } .dot.g { background: #22c55e; }
+    .file { margin-left: 8px; font-size: 12px; color: #94a3b8; font-family: Consolas, monospace; }
+    .editor pre { padding: 14px; font-family: Consolas, "Courier New", monospace; font-size: 13px; line-height: 1.5; color: #e2e8f0; overflow-x: auto; }
+    .k { color: #38bdf8; } .s { color: #86efac; } .c { color: #64748b; } .f { color: #fbbf24; }
+
+    /* Jendela detail (modal) */
+    .modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
+    .modal-box { background: #ffffff; border-radius: 12px; max-width: 720px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; }
+    .modal-close { position: absolute; top: 10px; right: 12px; width: auto; margin: 0; padding: 4px 12px; font-size: 18px; background: #1e293b; color: #fff; border-radius: 6px; z-index: 2; }
+    .modal-close:hover { background: #ef4444; }
+    .modal-content { padding: 24px; }
+    .modal-content h2 { color: #1e3a8a; margin-bottom: 14px; padding-right: 40px; }
+    .modal-content h4 { color: #1d4ed8; margin: 18px 0 6px; }
+    .modal-content p { font-size: 14px; line-height: 1.6; color: #334155; }
+    .modal-content ul { margin: 0 0 0 20px; font-size: 14px; line-height: 1.7; color: #334155; }
+    .modal-content code { background: #e0e7ff; padding: 1px 5px; border-radius: 4px; font-family: Consolas, monospace; font-size: 13px; }
+    .modal-content .editor { border-radius: 8px; overflow: hidden; margin-bottom: 4px; }
+
+    .form-wrap { max-width: 560px; margin: 0 auto; padding: 20px 20px 50px; }
+    form { background: #ffffff; padding: 24px; border-radius: 10px; box-shadow: 0 2px 8px rgba(30, 64, 175, 0.15); }
+    form > label { display: block; margin: 14px 0 6px; font-weight: bold; }
+    input[type="text"], input[type="tel"], textarea, select {
+      width: 100%; padding: 10px; border: 1px solid #93c5fd; border-radius: 6px;
+      background: #f8fafc; color: #1e293b; font-size: 14px;
+    }
+    .radio-group { display: flex; gap: 20px; }
+    .radio-group label { font-weight: normal; }
+    button { margin-top: 20px; width: 100%; padding: 12px; border: none; border-radius: 6px; background: #2563eb; color: #ffffff; font-size: 16px; font-weight: bold; cursor: pointer; }
+    button:hover { background: #1d4ed8; }
+
+    .hasil { margin-top: 24px; background: #ffffff; padding: 24px; border-radius: 10px; border-left: 4px solid #2563eb; box-shadow: 0 2px 8px rgba(30, 64, 175, 0.15); }
+    .hasil h2 { margin-bottom: 14px; color: #1d4ed8; font-size: 20px; }
+    .hasil table { width: 100%; border-collapse: collapse; }
+    .hasil td { padding: 8px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+    .hasil td:first-child { width: 40%; font-weight: bold; color: #475569; }
+
+    .hidden, .modal.hidden { display: none; }
+    footer { text-align: center; padding: 20px; background: #bfdbfe; color: #334155; font-size: 14px; }
+
+    @media (max-width: 600px) {
+      nav { padding: 14px 20px; }
+      .gallery { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo">&lt;/&gt; Coding Academy</div>
+    <ul>
+      <li><a id="menuGallery" class="active" onclick="tampil('gallery')">Gallery</a></li>
+      <li><a id="menuDaftar" onclick="tampil('daftar')">Pendaftaran</a></li>
+    </ul>
+  </nav>
+
+  <!-- TAMPILAN 1: GALLERY -->
+  <section id="gallery">
+    <header class="hero">
+      <h1>Gallery Kegiatan Pelatihan</h1>
+      <p>Intip keseruan belajar ngoding bareng di Coding Academy. Klik kartu untuk lihat penjelasannya.</p>
+    </header>
+
+    <div class="gallery">
+      <div class="card" data-id="html" tabindex="0" onclick="bukaDetail('html')">
+        <div class="editor">
+          <div class="editor-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="file">index.html</span></div>
+<pre><span class="k">&lt;h1</span> <span class="f">class</span>=<span class="s">"judul"</span><span class="k">&gt;</span>
+  Halo Dunia!
+<span class="k">&lt;/h1&gt;</span>
+
+<span class="c">/* style.css */</span>
+<span class="f">.judul</span> {
+  color: <span class="s">#2563eb</span>;
+  text-align: <span class="s">center</span>;
+}</pre>
+        </div>
+        <div class="card-body">
+          <h3>Workshop HTML &amp; CSS</h3>
+          <p>Peserta belajar membuat halaman web pertama mereka dari nol, mulai dari struktur HTML sampai styling dengan CSS.</p>
+          <span class="hint">Lihat penjelasan &rarr;</span>
+        </div>
+      </div>
+
+      <div class="card" data-id="python" tabindex="0" onclick="bukaDetail('python')">
+        <div class="editor">
+          <div class="editor-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="file">belajar.py</span></div>
+<pre><span class="c"># Dasar Python</span>
+nama = <span class="s">"Coding Academy"</span>
+
+<span class="k">for</span> i <span class="k">in</span> <span class="f">range</span>(<span class="s">3</span>):
+    <span class="f">print</span>(<span class="s">f"Halo {nama} ke-{i+1}"</span>)
+
+<span class="k">def</span> <span class="f">kuadrat</span>(x):
+    <span class="k">return</span> x * x</pre>
+        </div>
+        <div class="card-body">
+          <h3>Bootcamp Python</h3>
+          <p>Pelatihan intensif dasar pemrograman Python, dari variabel, perulangan, sampai membuat program sederhana.</p>
+          <span class="hint">Lihat penjelasan &rarr;</span>
+        </div>
+      </div>
+
+      <div class="card" data-id="js" tabindex="0" onclick="bukaDetail('js')">
+        <div class="editor">
+          <div class="editor-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="file">script.js</span></div>
+<pre><span class="k">const</span> tombol = document.<span class="f">getElementById</span>(<span class="s">"btn"</span>);
+
+tombol.<span class="f">addEventListener</span>(<span class="s">"click"</span>, () =&gt; {
+  <span class="f">alert</span>(<span class="s">"Halo dari JavaScript!"</span>);
+});
+
+<span class="k">function</span> <span class="f">tambah</span>(a, b) {
+  <span class="k">return</span> a + b;
+}</pre>
+        </div>
+        <div class="card-body">
+          <h3>Pelatihan JavaScript</h3>
+          <p>Membuat website jadi interaktif lewat manipulasi DOM, event, dan validasi form.</p>
+          <span class="hint">Lihat penjelasan &rarr;</span>
+        </div>
+      </div>
+
+      <div class="card" data-id="java" tabindex="0" onclick="bukaDetail('java')">
+        <div class="editor">
+          <div class="editor-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="file">Main.java</span></div>
+<pre><span class="k">public class</span> <span class="f">Main</span> {
+  <span class="k">public static void</span> <span class="f">main</span>(String[] args) {
+    Mahasiswa m = <span class="k">new</span> <span class="f">Mahasiswa</span>(<span class="s">"Gio"</span>);
+    System.out.<span class="f">println</span>(m.<span class="f">getNama</span>());
+  }
+}</pre>
+        </div>
+        <div class="card-body">
+          <h3>Kelas Java OOP</h3>
+          <p>Memahami konsep pemrograman berorientasi objek lewat studi kasus dan latihan langsung bersama mentor.</p>
+          <span class="hint">Lihat penjelasan &rarr;</span>
+        </div>
+      </div>
+
+      <div class="card" data-id="php" tabindex="0" onclick="bukaDetail('php')">
+        <div class="editor">
+          <div class="editor-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="file">index.php</span></div>
+<pre><span class="k">&lt;?php</span>
+$nama = <span class="s">"Coding Academy"</span>;
+
+<span class="k">echo</span> <span class="s">"Selamat datang di $nama"</span>;
+
+<span class="k">function</span> <span class="f">sapa</span>($n) {
+  <span class="k">return</span> <span class="s">"Halo, "</span> . $n;
+}
+<span class="k">?&gt;</span></pre>
+        </div>
+        <div class="card-body">
+          <h3>Pelatihan PHP</h3>
+          <p>Belajar membuat website dinamis dengan PHP, mulai dari menerima input form sampai menampilkan data.</p>
+          <span class="hint">Lihat penjelasan &rarr;</span>
+        </div>
+      </div>
+
+      <div class="card" data-id="cpp" tabindex="0" onclick="bukaDetail('cpp')">
+        <div class="editor">
+          <div class="editor-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="file">main.cpp</span></div>
+<pre><span class="k">#include</span> <span class="s">&lt;iostream&gt;</span>
+<span class="k">using namespace</span> std;
+
+<span class="k">int</span> <span class="f">main</span>() {
+  cout &lt;&lt; <span class="s">"Halo, C++!"</span> &lt;&lt; endl;
+  <span class="k">return</span> 0;
+}</pre>
+        </div>
+        <div class="card-body">
+          <h3>Kelas C++ Dasar</h3>
+          <p>Mengenal logika pemrograman lewat C++, mulai dari tipe data, percabangan, sampai fungsi.</p>
+          <span class="hint">Lihat penjelasan &rarr;</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAMPILAN 2: PENDAFTARAN -->
+  <section id="daftar" class="hidden">
+    <header class="hero">
+      <h1>Form Pendaftaran</h1>
+      <p>Isi data dirimu dengan benar untuk gabung di Coding Academy.</p>
+    </header>
+
+    <div class="form-wrap">
+      <form id="formDaftar">
+        <label for="nik">NIK</label>
+        <input type="text" id="nik" maxlength="16" placeholder="16 digit NIK" required>
+
+        <label for="nama">Nama Lengkap</label>
+        <input type="text" id="nama" placeholder="Nama sesuai KTP" required>
+
+        <label>Jenis Kelamin</label>
+        <div class="radio-group">
+          <label><input type="radio" name="gender" value="Laki-laki" required> Laki-laki</label>
+          <label><input type="radio" name="gender" value="Perempuan"> Perempuan</label>
+        </div>
+
+        <label for="hp">No HP</label>
+        <input type="tel" id="hp" placeholder="08xxxxxxxxxx" required>
+
+        <label for="alamat">Alamat</label>
+        <textarea id="alamat" rows="3" placeholder="Alamat lengkap" required></textarea>
+
+        <label for="bahasa">Bahasa Pemrograman yang Diminati</label>
+        <select id="bahasa" required>
+          <option value="">-- Pilih bahasa --</option>
+          <option>Python</option>
+          <option>JavaScript</option>
+          <option>Java</option>
+          <option>PHP</option>
+          <option>C++</option>
+          <option>Dart (Flutter)</option>
+        </select>
+
+        <button type="submit">Simpan</button>
+      </form>
+
+      <div id="hasil" class="hasil hidden">
+        <h2>Data Pendaftaran Tersimpan</h2>
+        <table>
+          <tr><td>NIK</td><td id="outNik"></td></tr>
+          <tr><td>Nama Lengkap</td><td id="outNama"></td></tr>
+          <tr><td>Jenis Kelamin</td><td id="outGender"></td></tr>
+          <tr><td>No HP</td><td id="outHp"></td></tr>
+          <tr><td>Alamat</td><td id="outAlamat"></td></tr>
+          <tr><td>Bahasa Pemrograman</td><td id="outBahasa"></td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- JENDELA DETAIL -->
+  <div id="modal" class="modal hidden" onclick="if (event.target === this) tutupDetail()">
+    <div class="modal-box">
+      <button class="modal-close" onclick="tutupDetail()" aria-label="Tutup">&times;</button>
+      <div id="modalIsi" class="modal-content"></div>
+    </div>
+  </div>
+
+  <footer>&copy; 2026 Coding Academy. All rights reserved.</footer>
+
+  <script>
+    function tampil(halaman) {
+      document.getElementById("gallery").classList.toggle("hidden", halaman !== "gallery");
+      document.getElementById("daftar").classList.toggle("hidden", halaman !== "daftar");
+      document.getElementById("menuGallery").classList.toggle("active", halaman === "gallery");
+      document.getElementById("menuDaftar").classList.toggle("active", halaman === "daftar");
+      window.scrollTo(0, 0);
+    }
+
+    // Data penjelasan tiap program
+    var info = {
+      html: {
+        judul: "Workshop HTML &amp; CSS",
+        tentang: "HTML adalah bahasa markup untuk menyusun struktur halaman web, sedangkan CSS dipakai untuk mengatur tampilannya, mulai dari warna, ukuran, posisi, sampai font. Keduanya jadi fondasi sebelum belajar bahasa pemrograman lain untuk web.",
+        kode: "Tag <code>&lt;h1&gt;</code> dengan class <code>judul</code> membuat heading utama yang berisi teks \"Halo Dunia!\". Di bagian CSS, selector <code>.judul</code> menarget semua elemen yang punya class tersebut, lalu mewarnainya biru (<code>#2563eb</code>) dan menaruh teksnya di tengah.",
+        materi: ["Struktur dasar dokumen HTML", "Tag heading, paragraf, gambar, link, dan tabel", "Selector dan properti CSS", "Box model (margin, padding, border)", "Layout dengan flexbox dan grid"]
+      },
+      python: {
+        judul: "Bootcamp Python",
+        tentang: "Python adalah bahasa pemrograman dengan sintaks ringkas yang mirip bahasa Inggris, jadi ramah buat pemula. Bahasa ini banyak dipakai untuk data science, kecerdasan buatan, otomasi, dan pengembangan web.",
+        kode: "Variabel <code>nama</code> menyimpan teks. Perulangan <code>for</code> dengan <code>range(3)</code> mengulang tiga kali dan mencetak \"Halo Coding Academy ke-1\" sampai ke-3. Lalu <code>def kuadrat(x)</code> membuat fungsi yang mengembalikan hasil <code>x</code> dikali <code>x</code>. Perlu diingat, Python memakai indentasi (spasi di awal baris) untuk menandai isi dari sebuah blok.",
+        materi: ["Variabel dan tipe data", "Percabangan (if, elif, else)", "Perulangan (for dan while)", "Fungsi", "List dan dictionary"]
+      },
+      js: {
+        judul: "Pelatihan JavaScript",
+        tentang: "JavaScript adalah bahasa yang berjalan langsung di browser dan bikin halaman web jadi interaktif, misalnya menampilkan pesan, memvalidasi form, atau mengubah isi halaman tanpa reload.",
+        kode: "<code>getElementById(\"btn\")</code> mengambil elemen HTML yang ber-id <code>btn</code> dan menyimpannya di variabel <code>tombol</code>. <code>addEventListener(\"click\", ...)</code> membuat sebuah aksi dijalankan ketika tombol diklik, dalam contoh ini menampilkan <code>alert</code>. Di bawahnya ada fungsi <code>tambah(a, b)</code> yang mengembalikan hasil penjumlahan dua angka.",
+        materi: ["Variabel (let, const) dan tipe data", "Fungsi dan arrow function", "Manipulasi DOM", "Event handling", "Validasi form"]
+      },
+      java: {
+        judul: "Kelas Java OOP",
+        tentang: "Java adalah bahasa berorientasi objek (OOP) yang dipakai untuk aplikasi Android, sistem backend, sampai aplikasi skala besar di perusahaan. Programnya disusun dari class dan object.",
+        kode: "<code>public class Main</code> adalah kelas utama, dan method <code>main</code> adalah titik awal program dijalankan. Baris <code>new Mahasiswa(\"Gio\")</code> membuat sebuah objek dari class <code>Mahasiswa</code> dengan nama \"Gio\", lalu <code>println(m.getNama())</code> mencetak nama tersebut lewat method getter. Class <code>Mahasiswa</code> sendiri perlu dibuat terpisah.",
+        materi: ["Class dan object", "Constructor", "Enkapsulasi (getter dan setter)", "Inheritance (pewarisan)", "Polymorphism"]
+      },
+      php: {
+        judul: "Pelatihan PHP",
+        tentang: "PHP adalah bahasa pemrograman sisi server untuk membuat website dinamis. Kodenya dijalankan di server, lalu hasilnya dikirim ke browser dalam bentuk HTML. Cocok untuk membuat sistem login, form pendaftaran, dan aplikasi berbasis database.",
+        kode: "Blok kode PHP dibuka dengan <code>&lt;?php</code> dan ditutup <code>?&gt;</code>. Variabel diawali tanda <code>$</code>, jadi <code>$nama</code> menyimpan teks. <code>echo</code> mencetak teks ke halaman, dan <code>$nama</code> di dalam tanda kutip dua otomatis diganti nilainya. Fungsi <code>sapa()</code> menggabungkan kata \"Halo, \" dengan nama memakai tanda titik (<code>.</code>).",
+        materi: ["Variabel dan tipe data", "Mengambil input form dengan $_POST dan $_GET", "Fungsi", "Koneksi ke database MySQL", "Session dan login"]
+      },
+      cpp: {
+        judul: "Kelas C++ Dasar",
+        tentang: "C++ adalah bahasa yang cepat dan dekat dengan perangkat keras, banyak dipakai untuk game, sistem operasi, dan kompetisi pemrograman. Belajar C++ membantu memahami logika pemrograman dengan lebih dalam.",
+        kode: "<code>#include &lt;iostream&gt;</code> memanggil library input-output. <code>using namespace std;</code> membuat kita tidak perlu menulis <code>std::</code> berulang kali. Fungsi <code>main()</code> adalah titik awal program, <code>cout</code> mencetak teks ke layar, dan <code>return 0</code> menandakan program selesai tanpa error.",
+        materi: ["Tipe data dan variabel", "Input dan output (cin dan cout)", "Percabangan dan perulangan", "Fungsi", "Array dan pointer"]
+      }
+    };
+
+    function bukaDetail(id) {
+      var d = info[id];
+      var daftarMateri = "";
+      for (var i = 0; i < d.materi.length; i++) {
+        daftarMateri += "<li>" + d.materi[i] + "</li>";
+      }
+
+      document.getElementById("modalIsi").innerHTML =
+        "<h2>" + d.judul + "</h2>" +
+        "<div id='modalKode'></div>" +
+        "<h4>Tentang</h4><p>" + d.tentang + "</p>" +
+        "<h4>Penjelasan Kode</h4><p>" + d.kode + "</p>" +
+        "<h4>Yang Dipelajari</h4><ul>" + daftarMateri + "</ul>";
+
+      // salin tampilan kode dari kartu ke dalam jendela detail
+      var editor = document.querySelector('.card[data-id="' + id + '"] .editor').cloneNode(true);
+      document.getElementById("modalKode").appendChild(editor);
+
+      document.getElementById("modal").classList.remove("hidden");
+      document.getElementById("modal").querySelector(".modal-box").scrollTop = 0;
+    }
+
+    function tutupDetail() {
+      document.getElementById("modal").classList.add("hidden");
+    }
+
+    // tutup dengan tombol Esc, buka kartu dengan Enter
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") tutupDetail();
+      if (e.key === "Enter" && e.target.classList.contains("card")) {
+        bukaDetail(e.target.getAttribute("data-id"));
+      }
+    });
+
+    document.getElementById("formDaftar").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      var nik = document.getElementById("nik").value.trim();
+      var nama = document.getElementById("nama").value.trim();
+      var gender = document.querySelector('input[name="gender"]:checked').value;
+      var hp = document.getElementById("hp").value.trim();
+      var alamat = document.getElementById("alamat").value.trim();
+      var bahasa = document.getElementById("bahasa").value;
+
+      if (!/^\d{16}$/.test(nik)) {
+        alert("NIK harus berisi 16 digit angka.");
+        return;
+      }
+      if (!/^08\d{8,11}$/.test(hp)) {
+        alert("No HP harus diawali 08 dan berisi 10-13 digit angka.");
+        return;
+      }
+
+      if (confirm("Apakah Anda sudah yakin untuk menyimpan?")) {
+        document.getElementById("outNik").textContent = nik;
+        document.getElementById("outNama").textContent = nama;
+        document.getElementById("outGender").textContent = gender;
+        document.getElementById("outHp").textContent = hp;
+        document.getElementById("outAlamat").textContent = alamat;
+        document.getElementById("outBahasa").textContent = bahasa;
+
+        var hasil = document.getElementById("hasil");
+        hasil.classList.remove("hidden");
+        hasil.scrollIntoView({ behavior: "smooth" });
+      }
+    });
+  </script>
+</body>
+</html>
